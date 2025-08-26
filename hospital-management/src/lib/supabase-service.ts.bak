@@ -1,0 +1,414 @@
+import { supabase } from './supabase';
+import { User, Hospital, Part, WarehouseItem, CoilItem, InOutHistory, OutboundPart, OutboundHistory, Account } from '@/types';
+
+// 계정 관련 함수들
+export const getAccountsFromSupabase = async (): Promise<Account[]> => {
+  if (!supabase) {
+    console.log('Supabase 클라이언트가 초기화되지 않았습니다.');
+    return [];
+  }
+  
+  try {
+    const { data, error } = await supabase
+      .from('accounts')
+      .select('*')
+      .order('created_at', { ascending: false });
+
+    if (error) {
+      console.error('Error fetching accounts:', error);
+      return [];
+    }
+
+    return data.map(account => ({
+      id: account.id,
+      username: account.username,
+      name: account.name,
+      password: account.password,
+      role: account.role,
+      createdAt: account.created_at,
+      updatedAt: account.updated_at,
+    }));
+  } catch (error) {
+    console.error('Error fetching accounts:', error);
+    return [];
+  }
+};
+
+export const setAccountsToSupabase = async (accounts: Account[]): Promise<boolean> => {
+  if (!supabase) {
+    console.log('Supabase 클라이언트가 초기화되지 않았습니다.');
+    return false;
+  }
+  
+  try {
+    // 기존 데이터 삭제
+    await supabase.from('accounts').delete().gte('id', '');
+
+    // 새 데이터 삽입
+    const { error } = await supabase
+      .from('accounts')
+      .insert(accounts.map(account => ({
+        id: account.id,
+        username: account.username,
+        name: account.name,
+        password: account.password,
+        role: account.role,
+        created_at: account.createdAt,
+        updated_at: account.updatedAt,
+      })));
+
+    if (error) {
+      console.error('Error saving accounts:', error);
+      return false;
+    }
+
+    return true;
+  } catch (error) {
+    console.error('Error saving accounts:', error);
+    return false;
+  }
+};
+
+// 병원 관련 함수들
+export const getHospitalsFromSupabase = async (): Promise<Hospital[]> => {
+  if (!supabase) {
+    console.log('Supabase 클라이언트가 초기화되지 않았습니다.');
+    return [];
+  }
+  
+  try {
+    const { data, error } = await supabase
+      .from('hospitals')
+      .select('*')
+      .order('created_at', { ascending: false });
+
+    if (error) {
+      console.error('Error fetching hospitals:', error);
+      return [];
+    }
+
+    return data.map(hospital => ({
+      id: hospital.id,
+      name: hospital.name,
+      modality: hospital.modality,
+      systemId: hospital.system_id,
+      equipment: hospital.equipment,
+      softwareVersion: hospital.software_version,
+      address: hospital.address,
+      phone: hospital.phone,
+      createdAt: hospital.created_at,
+      updatedAt: hospital.updated_at,
+    }));
+  } catch (error) {
+    console.error('Error fetching hospitals:', error);
+    return [];
+  }
+};
+
+export const setHospitalsToSupabase = async (hospitals: Hospital[]): Promise<boolean> => {
+  try {
+    // 기존 데이터 삭제
+    await supabase.from('hospitals').delete().gte('id', '');
+
+    // 새 데이터 삽입
+    const { error } = await supabase
+      .from('hospitals')
+      .insert(hospitals.map(hospital => ({
+        id: hospital.id,
+        name: hospital.name,
+        modality: hospital.modality,
+        system_id: hospital.systemId,
+        equipment: hospital.equipment,
+        software_version: hospital.softwareVersion,
+        address: hospital.address,
+        phone: hospital.phone,
+        created_at: hospital.createdAt,
+        updated_at: hospital.updatedAt,
+      })));
+
+    if (error) {
+      console.error('Error saving hospitals:', error);
+      return false;
+    }
+
+    return true;
+  } catch (error) {
+    console.error('Error saving hospitals:', error);
+    return false;
+  }
+};
+
+// 부품 관련 함수들
+export const getPartsFromSupabase = async (): Promise<Part[]> => {
+  try {
+    const { data, error } = await supabase
+      .from('parts')
+      .select('*')
+      .order('created_at', { ascending: false });
+
+    if (error) {
+      console.error('Error fetching parts:', error);
+      return [];
+    }
+
+    return data.map(part => ({
+      id: part.id,
+      hospitalId: part.hospital_id,
+      hospitalName: part.hospital_name,
+      partName: part.part_name,
+      partNumber: part.part_number,
+      serialNumber: part.serial_number,
+      replacementDate: part.replacement_date,
+      worker: part.worker,
+      errorContent: part.error_content,
+      createdAt: part.created_at,
+      updatedAt: part.updated_at,
+    }));
+  } catch (error) {
+    console.error('Error fetching parts:', error);
+    return [];
+  }
+};
+
+export const setPartsToSupabase = async (parts: Part[]): Promise<boolean> => {
+  try {
+    // 기존 데이터 삭제
+    await supabase.from('parts').delete().gte('id', '');
+
+    // 새 데이터 삽입
+    const { error } = await supabase
+      .from('parts')
+      .insert(parts.map(part => ({
+        id: part.id,
+        hospital_id: part.hospitalId,
+        hospital_name: part.hospitalName,
+        part_name: part.partName,
+        part_number: part.partNumber,
+        serial_number: part.serialNumber,
+        replacement_date: part.replacementDate,
+        worker: part.worker,
+        error_content: part.errorContent,
+        created_at: part.createdAt,
+        updated_at: part.updatedAt,
+      })));
+
+    if (error) {
+      console.error('Error saving parts:', error);
+      return false;
+    }
+
+    return true;
+  } catch (error) {
+    console.error('Error saving parts:', error);
+    return false;
+  }
+};
+
+// 창고 관련 함수들
+export const getWarehouseFromSupabase = async (): Promise<WarehouseItem[]> => {
+  try {
+    const { data, error } = await supabase
+      .from('warehouse')
+      .select('*')
+      .order('created_at', { ascending: false });
+
+    if (error) {
+      console.error('Error fetching warehouse:', error);
+      return [];
+    }
+
+    return data.map(item => ({
+      id: item.id,
+      partName: item.part_name,
+      partNumber: item.part_number,
+      serialNumber: item.serial_number,
+      location: item.location,
+      inboundDate: item.inbound_date,
+      status: item.status,
+      description: item.description,
+      author: item.author,
+      createdAt: item.created_at,
+      updatedAt: item.updated_at,
+    }));
+  } catch (error) {
+    console.error('Error fetching warehouse:', error);
+    return [];
+  }
+};
+
+export const setWarehouseToSupabase = async (warehouse: WarehouseItem[]): Promise<boolean> => {
+  try {
+    // 기존 데이터 삭제
+    await supabase.from('warehouse').delete().gte('id', '');
+
+    // 새 데이터 삽입
+    const { error } = await supabase
+      .from('warehouse')
+      .insert(warehouse.map(item => ({
+        id: item.id,
+        part_name: item.partName,
+        part_number: item.partNumber,
+        serial_number: item.serialNumber,
+        location: item.location,
+        inbound_date: item.inboundDate,
+        status: item.status,
+        description: item.description,
+        author: item.author,
+        created_at: item.createdAt,
+        updated_at: item.updatedAt,
+      })));
+
+    if (error) {
+      console.error('Error saving warehouse:', error);
+      return false;
+    }
+
+    return true;
+  } catch (error) {
+    console.error('Error saving warehouse:', error);
+    return false;
+  }
+};
+
+// 코일 관련 함수들
+export const getCoilsFromSupabase = async (): Promise<CoilItem[]> => {
+  try {
+    const { data, error } = await supabase
+      .from('coils')
+      .select('*')
+      .order('created_at', { ascending: false });
+
+    if (error) {
+      console.error('Error fetching coils:', error);
+      return [];
+    }
+
+    return data.map(coil => ({
+      id: coil.id,
+      coilName: coil.coil_name,
+      coilNumber: coil.coil_number,
+      serialNumber: coil.serial_number,
+      location: coil.location,
+      inboundDate: coil.inbound_date,
+      status: coil.status,
+      description: coil.description,
+      author: coil.author,
+      createdAt: coil.created_at,
+      updatedAt: coil.updated_at,
+    }));
+  } catch (error) {
+    console.error('Error fetching coils:', error);
+    return [];
+  }
+};
+
+export const setCoilsToSupabase = async (coils: CoilItem[]): Promise<boolean> => {
+  try {
+    // 기존 데이터 삭제
+    await supabase.from('coils').delete().gte('id', '');
+
+    // 새 데이터 삽입
+    const { error } = await supabase
+      .from('coils')
+      .insert(coils.map(coil => ({
+        id: coil.id,
+        coil_name: coil.coilName,
+        coil_number: coil.coilNumber,
+        serial_number: coil.serialNumber,
+        location: coil.location,
+        inbound_date: coil.inboundDate,
+        status: coil.status,
+        description: coil.description,
+        author: coil.author,
+        created_at: coil.createdAt,
+        updated_at: coil.updatedAt,
+      })));
+
+    if (error) {
+      console.error('Error saving coils:', error);
+      return false;
+    }
+
+    return true;
+  } catch (error) {
+    console.error('Error saving coils:', error);
+    return false;
+  }
+};
+
+// 사용자 인증
+export const authenticateUserFromSupabase = async (username: string, password: string): Promise<User | null> => {
+  try {
+    const { data, error } = await supabase
+      .from('accounts')
+      .select('*')
+      .eq('username', username)
+      .eq('password', password)
+      .single();
+
+    if (error) {
+      console.error('Error authenticating user:', error);
+      return null;
+    }
+
+    return {
+      id: data.id,
+      username: data.username,
+      name: data.name,
+      role: data.role,
+      password: data.password,
+    };
+  } catch (error) {
+    console.error('Error authenticating user:', error);
+    return null;
+  }
+};
+
+// 초기 데이터 생성
+export const initializeSupabaseData = async (): Promise<void> => {
+  try {
+    // 계정이 있는지 확인
+    const { data: existingAccounts } = await supabase
+      .from('accounts')
+      .select('id')
+      .limit(1);
+
+    if (!existingAccounts || existingAccounts.length === 0) {
+      // 기본 계정 생성
+      const defaultAccounts = [
+        {
+          id: '1',
+          username: 'admin',
+          name: '관리자',
+          role: 'admin' as const,
+          password: 'admin123',
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString(),
+        },
+        {
+          id: '2',
+          username: 'user',
+          name: '일반사용자',
+          role: 'user' as const,
+          password: 'user123',
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString(),
+        },
+        {
+          id: '3',
+          username: 'thek',
+          name: '김극훈',
+          role: 'user' as const,
+          password: 'thek123',
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString(),
+        },
+      ];
+
+      await supabase.from('accounts').insert(defaultAccounts);
+      console.log('Default accounts created in Supabase');
+    }
+  } catch (error) {
+    console.error('Error initializing Supabase data:', error);
+  }
+};

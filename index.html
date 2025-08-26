@@ -1,0 +1,463 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>큐브메디 부품관리 시스템</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <!-- 로그인 페이지 -->
+        <section id="login" class="section active">
+            <div class="login-container">
+                <div class="login-card">
+                    <div class="login-header">
+                        <h1>🏥 큐브메디 부품관리 시스템</h1>
+                        <p>로그인하여 시스템을 이용하세요</p>
+                    </div>
+                    <form id="login-form" class="login-form">
+                        <div class="input-group">
+                            <label for="username">아이디</label>
+                            <input type="text" id="username" placeholder="아이디를 입력하세요" required>
+                        </div>
+                        <div class="input-group">
+                            <label for="password">비밀번호</label>
+                            <input type="password" id="password" placeholder="비밀번호를 입력하세요" required>
+                        </div>
+                        <button type="submit" class="login-btn">로그인</button>
+                    </form>
+                    <div class="login-footer">
+                       
+                        <button class="demo-btn" onclick="demoLogin()">데모 로그인</button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 메인 시스템 (로그인 후 표시) -->
+        <section id="main-system" class="section">
+            <header>
+                <div class="header-top">
+                    <h1>🏥 큐브메디 부품관리 시스템</h1>
+                    <div class="user-info">
+                        <span id="current-user">관리자</span>
+                        <button class="logout-btn" onclick="logout()">로그아웃</button>
+                    </div>
+                </div>
+                <nav>
+                    <button class="nav-btn active" onclick="showSection('hospitals')">병원관리</button>
+                    <button class="nav-btn" onclick="showSection('hospital-list')">병원목록</button>
+                                        <button class="nav-btn" onclick="showSection('warehouse')">창고관리</button>
+                    <button class="nav-btn" onclick="showSection('coil')">코일관리</button>
+                    <button class="nav-btn" onclick="showSection('inout-history')">입출고히스토리</button>
+                    <button class="nav-btn" onclick="showSection('parts')">출고부품관리</button>
+                    <button class="nav-btn" onclick="showSection('history')">교체히스토리</button>
+                    <button class="nav-btn" onclick="showSection('accounts')">계정관리</button>
+                    <button class="nav-btn" id="hospital-detail-btn" onclick="showSection('hospital-detail')" style="display: none;">병원상세</button>
+                </nav>
+            </header>
+
+            <main>
+                <!-- 병원관리 섹션 -->
+                <section id="hospitals" class="section active">
+                    <h2>🏥 병원관리</h2>
+                    <div class="form-container">
+        
+                        <form id="hospital-form">
+                            <input type="text" id="hospital-name" placeholder="병원명" required>
+                            <input type="text" id="hospital-modality" placeholder="Modality" required>
+                            <input type="text" id="hospital-system-id" placeholder="System ID" required>
+                            <input type="text" id="hospital-equipment" placeholder="장비명" required>
+                            <input type="text" id="hospital-software-version" placeholder="Software Version" required>
+                            <input type="text" id="hospital-address" placeholder="주소" required>
+                            <input type="tel" id="hospital-phone" placeholder="연락처" required>
+                            <button type="submit">병원 추가</button>
+                        </form>
+                    </div>
+                    <div class="list-container">
+                        <h3 class="hospital-list-title">병원 목록</h3>
+                        <div class="search-container">
+                            <input type="text" id="hospital-search" placeholder="병원명, Modality, System ID, 장비명, Software Version으로 검색..." class="search-input">
+                        </div>
+                        <div class="table-container">
+                            <table class="hospital-table">
+                                <thead>
+                                    <tr>
+                                        <th>병원명</th>
+                                        <th>Modality</th>
+                                        <th>System ID</th>
+                                        <th>장비명</th>
+                                        <th>Software Version</th>
+                                        <th>주소</th>
+                                        <th>연락처</th>
+                                        <th>작업</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="hospitals-list">
+                                </tbody>
+                            </table>
+                        </div>
+                        <div id="hospitals-pagination" class="pagination"></div>
+                    </div>
+                </section>
+
+                <!-- 병원목록 섹션 -->
+                <section id="hospital-list" class="section">
+                    <h2>📋 병원목록</h2>
+                    <div class="list-container">
+                        <h3 class="hospital-list-title">등록된 병원 목록</h3>
+                        <div class="search-container">
+                            <input type="text" id="hospital-list-search" placeholder="병원명, System ID, 장비명, Modality, Software Version으로 검색..." class="search-input">
+                        </div>
+                        <div id="hospital-list-container"></div>
+                    </div>
+                </section>
+
+                <!-- 병원 상세 페이지 -->
+                <section id="hospital-detail" class="section">
+                    <div class="detail-header">
+                        <button class="back-btn" onclick="backToHospitals()">← 병원목록으로 돌아가기</button>
+                        <h2 id="detail-hospital-name">병원 상세정보</h2>
+                    </div>
+                    
+                    <div class="detail-content">
+                        <div class="hospital-info-card">
+                            <h3>병원 정보</h3>
+                            <div id="hospital-basic-info"></div>
+                        </div>
+                        
+                        <div class="current-parts-card">
+                            <h3>최근 장착된 부품</h3>
+                            <div class="add-part-section">
+                                <button class="add-part-btn" onclick="showAddPartForm()">+ 부품 교체</button>
+                            </div>
+                            <div id="current-parts-list"></div>
+                            <div id="current-parts-pagination" class="pagination"></div>
+                        </div>
+                        
+                                    <div class="replaced-parts-card">
+                <h3>현재 장착된 부품</h3>
+                            <div class="site-info-actions">
+                                <div class="site-info-search">
+                                    <input type="text" id="site-info-search" placeholder="부품명, 부품번호, 시리얼번호, 작업자로 검색..." class="search-input">
+                                </div>
+                                <button class="add-site-info-btn" onclick="showAddSiteInfoForm()">+ Site INFO 추가</button>
+                            </div>
+                            <div class="parts-sheet-container">
+                                <table class="parts-sheet">
+                                    <thead>
+                                        <tr>
+                                            <th>부품명</th>
+                                            <th>부품번호</th>
+                                            <th>시리얼번호</th>
+                                            <th>교체일</th>
+                                            <th>작업자</th>
+                                            <th>작업</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="replaced-parts-list">
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- 창고관리 섹션 -->
+                <section id="warehouse" class="section">
+                    <h2>📦 창고관리</h2>
+                    <div class="form-container">
+                        <h3>재고 관리</h3>
+                        <form id="warehouse-form">
+                            <input type="text" id="warehouse-part-name" placeholder="부품명을 입력하세요" required>
+                            <input type="text" id="warehouse-part-number" placeholder="부품번호" required>
+                            <input type="text" id="warehouse-serial-number" placeholder="시리얼번호" required>
+                            <input type="text" id="warehouse-location" placeholder="위치 (예: A-1-1, B-2-3)" required>
+                            <input type="date" id="warehouse-date" placeholder="입고년도" required>
+                            <select id="warehouse-status" required>
+                                <option value="">상태 선택</option>
+                                <option value="Good">Good</option>
+                                <option value="Bad">Bad</option>
+                            </select>
+                            <input type="text" id="warehouse-author" placeholder="입고자 이름을 입력하세요" required>
+                            <div class="form-group">
+                                <label for="warehouse-description">입고내용</label>
+                                <textarea id="warehouse-description" placeholder="입고내용 (부품에 대한 설명이나 특이사항을 입력하세요)" required></textarea>
+                            </div>
+                            <button type="submit" id="warehouse-submit-btn" disabled>재고 추가</button>
+                        </form>
+                    </div>
+                    <div class="list-container">
+                        <h3>창고 재고 현황</h3>
+                        <div class="search-container">
+                            <input type="text" id="warehouse-search" placeholder="부품명, 부품번호, 시리얼번호, 위치, 입고내용, 입고자로 검색..." class="search-input">
+                        </div>
+                        <div class="warehouse-table-container">
+                            <table class="warehouse-table">
+                                <thead>
+                                    <tr>
+                                        <th>부품명</th>
+                                        <th>부품번호</th>
+                                        <th>시리얼번호</th>
+                                        <th>위치</th>
+                                        <th>입고일</th>
+                                        <th>상태</th>
+                                        <th>입고내용</th>
+                                        <th>입고자</th>
+                                        <th>작업</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="warehouse-list">
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- 입출고 히스토리 섹션 -->
+                <section id="inout-history" class="section">
+                    <h2>📦 입출고 히스토리</h2>
+                    <div class="list-container">
+                        <h3>입출고 기록</h3>
+                        <div class="search-container">
+                            <input type="text" id="inout-search" placeholder="부품명, 부품번호, 시리얼번호, 위치, 병원명, 입고내용, 입고자, 출고자, 작업자로 검색..." class="search-input">
+                        </div>
+                        <div class="inout-actions">
+                            <button class="export-btn" onclick="exportInoutHistoryToExcel()">📊 엑셀 내보내기</button>
+                        </div>
+                        <div class="inout-table-container">
+                            <table class="inout-table">
+                                <thead>
+                                    <tr>
+                                        <th>날짜</th>
+                                        <th>부품명</th>
+                                        <th>부품번호</th>
+                                        <th>시리얼번호</th>
+                                        <th>위치</th>
+                                        <th>구분</th>
+                                        <th>병원명</th>
+                                        <th>상태</th>
+                                        <th>입고내용</th>
+                                        <th>입고자</th>
+                                        <th>출고자</th>
+                                        <th>작업자</th>
+                                        <th>작업</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="inout-history-list">
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- 부품관리 섹션 -->
+                <section id="parts" class="section">
+                    <h2>🔧 출고중인 부품관리</h2>
+                    <div class="form-container">
+                        <h3>출고 부품 추가</h3>
+                        <form id="part-form">
+                            <input type="text" id="part-hospital" placeholder="병원명" required>
+                            <input type="text" id="part-name" placeholder="부품명" required>
+                            <input type="text" id="part-number" placeholder="부품번호" required>
+                            <input type="text" id="part-serial" placeholder="시리얼번호" required>
+                            <input type="date" id="part-date" placeholder="출고날짜" required>
+                            <input type="text" id="part-worker" placeholder="출고자" required>
+                            <textarea id="part-notes" placeholder="내용" rows="3"></textarea>
+                            <button type="submit">출고 부품 추가</button>
+                        </form>
+                    </div>
+                    <div class="list-container">
+                        <h3>출고중인 부품 목록</h3>
+                        <div class="table-container">
+                            <table class="outbound-table">
+                                <thead>
+                                    <tr>
+                                        <th>출고날짜</th>
+                                        <th>병원명</th>
+                                        <th>부품명</th>
+                                        <th>부품번호</th>
+                                        <th>시리얼번호</th>
+                                        <th>출고자</th>
+                                        <th>내용</th>
+                                        <th>작업</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="parts-list">
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                    <div class="list-container">
+                        <h3>출고 히스토리</h3>
+                        <div class="search-container">
+                            <input type="text" id="outbound-history-search" placeholder="검색어를 입력하세요..." class="search-input">
+                        </div>
+                        <div class="table-container">
+                            <table class="outbound-history-table">
+                                <thead>
+                                    <tr>
+                                        <th>출고날짜</th>
+                                        <th>병원명</th>
+                                        <th>부품명</th>
+                                        <th>부품번호</th>
+                                        <th>시리얼번호</th>
+                                        <th>출고자</th>
+                                        <th>내용</th>
+                                        <th>작성자</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="outbound-history-list">
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- 교체히스토리 섹션 -->
+                <section id="history" class="section">
+                    <h2>📋 교체히스토리</h2>
+                    <div class="form-container">
+                        <h3>병원별 교체 히스토리 조회</h3>
+                        <form id="history-form">
+                            <select id="history-hospital" onchange="filterHistoryBySelectedHospital()">
+                                <option value="">병원을 선택하세요</option>
+                            </select>
+                        </form>
+                    </div>
+                    <div class="list-container">
+                        <h3 id="history-title">교체 히스토리</h3>
+                        <div class="search-container">
+                            <input type="text" id="history-search" placeholder="검색어를 입력하세요..." class="search-input">
+                        </div>
+                        <div class="history-actions">
+                            <button class="export-btn" onclick="exportHistoryToExcel()">📊 엑셀 내보내기</button>
+                        </div>
+                        <div class="table-container">
+                            <table class="history-table">
+                                <thead>
+                                    <tr>
+                                        <th>교체날짜</th>
+                                        <th>병원명</th>
+                                        <th>부품명</th>
+                                        <th>부품번호</th>
+                                        <th>시리얼번호</th>
+                                        <th>작업자</th>
+                                        <th>에러내용</th>
+                                        <th>작업</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="history-list">
+                                </tbody>
+                            </table>
+                        </div>
+                        <div id="history-pagination" class="pagination"></div>
+                    </div>
+                </section>
+
+                <!-- 코일관리 섹션 -->
+                <section id="coil" class="section">
+                    <h2>🔧 코일관리</h2>
+                    <div class="form-container">
+                        <h3>코일 재고 추가</h3>
+                        <form id="coil-form">
+                            <input type="text" id="coil-name" placeholder="코일명" required>
+                            <input type="text" id="coil-number" placeholder="코일번호" required>
+                            <input type="text" id="coil-serial" placeholder="시리얼번호" required>
+                            <input type="text" id="coil-location" placeholder="위치" required>
+                            <input type="date" id="coil-date" placeholder="입고날짜" required>
+                            <select id="coil-status" required>
+                                <option value="">상태 선택</option>
+                                <option value="Good">Good</option>
+                                <option value="Bad">Bad</option>
+                            </select>
+                            <input type="text" id="coil-author" placeholder="입고자" required>
+                            <textarea id="coil-description" placeholder="입고내용" rows="3" required></textarea>
+                            <button type="submit" id="coil-submit-btn">코일 추가</button>
+                        </form>
+                    </div>
+                    <div class="list-container">
+                        <h3>코일 재고 현황</h3>
+                        <div class="search-container">
+                            <input type="text" id="coil-search" placeholder="검색어를 입력하세요..." class="search-input">
+                        </div>
+                        <div class="table-container">
+                            <table class="coil-table">
+                                <thead>
+                                    <tr>
+                                        <th>코일명</th>
+                                        <th>부품번호</th>
+                                        <th>시리얼번호</th>
+                                        <th>위치</th>
+                                        <th>입고날짜</th>
+                                        <th>상태</th>
+                                        <th>입고내용</th>
+                                        <th>입고자</th>
+                                        <th>작업</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="coil-list">
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                    <div class="list-container">
+                        <h3>코일 히스토리</h3>
+                        <div class="search-container">
+                            <input type="text" id="coil-history-search" placeholder="검색어를 입력하세요..." class="search-input">
+                        </div>
+                        <div class="table-container">
+                            <table class="coil-history-table">
+                                <thead>
+                                    <tr>
+                                        <th>날짜</th>
+                                        <th>코일명</th>
+                                        <th>코일번호</th>
+                                        <th>시리얼번호</th>
+                                        <th>위치</th>
+                                        <th>구분</th>
+                                        <th>병원명</th>
+                                        <th>상태</th>
+                                        <th>내용</th>
+                                        <th>입고자</th>
+                                        <th>출고자</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="coil-history-list">
+                                </tbody>
+                            </table>
+                        </div>
+                        <div id="coil-history-pagination" class="pagination"></div>
+                    </div>
+                </section>
+
+                <!-- 계정관리 섹션 -->
+                <section id="accounts" class="section">
+                    <h2>👥 계정관리</h2>
+                    <div class="form-container">
+                        <h3>새 계정 추가</h3>
+                        <form id="account-form">
+                            <input type="text" id="account-name" placeholder="이름" required>
+                            <input type="text" id="account-username" placeholder="아이디" required>
+                            <input type="password" id="account-password" placeholder="비밀번호" required>
+                            <select id="account-role" required>
+                                <option value="">계정 유형 선택</option>
+                                <option value="user">일반계정</option>
+                                <option value="admin">관리자계정</option>
+                            </select>
+                            <button type="submit">계정 추가</button>
+                        </form>
+                    </div>
+                    <div class="list-container">
+                        <h3>등록된 계정 목록</h3>
+                        <div id="accounts-list"></div>
+                    </div>
+                </section>
+            </main>
+        </section>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html> 
