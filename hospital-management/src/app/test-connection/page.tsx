@@ -1,16 +1,17 @@
 'use client';
 
 import { useState } from 'react';
-import { testSupabaseConnection } from '@/lib/supabase';
 
 export default function TestConnectionPage() {
-  const [testResult, setTestResult] = useState<any>(null);
+  const [testResult, setTestResult] = useState<{ success: boolean; error?: string; data?: unknown } | null>(null);
   const [isLoading, setIsLoading] = useState(false);
 
   const handleTestConnection = async () => {
     setIsLoading(true);
     try {
-      const result = await testSupabaseConnection();
+      // 간단한 연결 테스트
+      const response = await fetch('/api/test-supabase');
+      const result = await response.json();
       setTestResult(result);
     } catch (error) {
       setTestResult({ success: false, error: error instanceof Error ? error.message : String(error) });
